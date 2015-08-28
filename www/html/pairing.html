@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<link rel="shortcut icon" type="image/x-icon" href="../images/common/ico-chi.ico" />
+
+	<title>산업방송 채널i OnAir</title>
+	<!--include-->
+	<link href="../css/bootstrap.css" rel="stylesheet" type="text/css" />
+	<link href="../css/bootstrap-theme.css" rel="stylesheet" type="text/css" />
+	<link href="../css/font-awesome.css" rel="stylesheet" type="text/css" />
+	<link href="../css/layout.css" rel="stylesheet" type="text/css" />
+
+	<script type="text/javascript" src="../js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript" src="../js/common.js"></script>
+	<script type="text/javascript" src="../js/bootstrap.js"></script>
+	<script type="text/javascript" src="../js/jquery.bxslider.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular-resource.js"></script>
+	<script type="text/javascript" src="https://101.livere.co.kr/js/livere8_lib.js" charset="utf-8"></script>
+	<script type="text/javascript" src="../js/jquery.blockUI.js"></script>
+	<!--//include-->
+</head>
+
+<body ng-app="sheduleApp">
+
+	<!-- Wrap -->
+	<div id="wrap">
+	
+		<!-- Header div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/headerCreateDiv.js"></script>
+		<script type="text/javascript">
+			// 선택된 메뉴의 active class 설정
+			setTopMenuActiveClass("TOP_MENU_3");	// TOP_MENU_1 : 뉴스, TOP_MENU_2 : 프로그램, TOP_MENU_3 : 편성표, TOP_MENU_4 : ON-AIR, NONE : 미선택	
+		</script>
+		<!-- //Header div 생성영역 끝 -->
+
+		<!-- content start -->
+		<div id="body" ng-controller="bodyCtrl">
+			<div class="schedule-select-day clearfix">
+				<div><button class="btn btn-info btn-sm" ng-click="moveDaily('prev', cmmPairingInfo.searchStartDate);"><i class="fa fa-chevron-left"></i></button></div>
+				<div>{{choiceDayText}}</div>
+				<div><button class="btn btn-info btn-sm" ng-click="moveDaily('next', cmmPairingInfo.searchStartDate);"><i class="fa fa-chevron-right"></i></button></div>
+			</div>
+			
+			<div class="schedule-subtab clearfix">
+				<ul class="schedule-subtab-ul">
+				<li ng-repeat="weekList in weeklyDateList" class="{{weekSetClass(weekList)}}" week-repeat ng-click="moveDaily('', weekList.day);"><a href="#">{{weekList.dayText}}</a></li>
+				</ul>
+			</div>
+			
+			<div>
+				<div class="schedule-day-box">
+					<ul class="plan-ul">
+					<li ng-repeat="dailyList in dailyPairingList" id="activeLi_{{dailyList.pairingIdx}}" daily-repeat ng-click="setClass(dailyList.pairingIdx);">
+						<div class="plan-title">
+							<span>{{dailyList.startTime}}</span>
+							<a href="">{{dailyList.programName}}</a>
+							<i ng-show="dailyList.programViewGrade == '1'" class="label label-primary">all</i>
+							<i ng-show="dailyList.programViewGrade == '2'" class="label label-info">7</i>
+							<i ng-show="dailyList.programViewGrade == '3'" class="label label-success">12</i>
+							<i ng-show="dailyList.programViewGrade == '4'" class="label label-warning">15</i>
+							<i ng-show="dailyList.programViewGrade == '5'" class="label label-danger">19</i>
+						</div>
+						<div id="detailPairing_{{dailyList.pairingIdx}}" class="planproinfo-detail clearfix">
+							<div class="pull-left" style="padding-right:10px;"><img src="{{dailyList.pairingImgPath}}"></div>
+							<dl>
+							<dt ng-bind-html="deliberatelyTrustDangerousSnippet(dailyList.title)"></dt>
+							<dd ng-bind-html="deliberatelyTrustDangerousSnippet(dailyList.summary)"></dd>
+							</dl>
+							<a class="btn btn-danger btn-xs" href="" ng-click="moveLink(dailyList.category, dailyList.programIdx);">바로가기</a>
+						</div>
+					</li>
+					</ul>
+				</div>
+				<div class="planproinfo-comment">
+					<ul>
+					<li><span class="label label-primary">all</span>&nbsp;전체시청</li>
+					<li><span class="label label-info">7</span>&nbsp;7세이상</li>
+					<li><span class="label label-success">12</span>&nbsp;12세이상</li>
+					<li><span class="label label-warning">15</span>&nbsp;15세이상</li>
+					<li><span class="label label-danger">19</span>&nbsp;19세이상</li>
+					</ul>
+					<div class="clear"></div>
+					<i class="fa fa-info-circle"></i>&nbsp;일부 프로그램은 저작권 문제로 다시보기가 제공되지 않을 수 있습니다.
+				</div>
+			</div>
+		</div>
+		<!-- //content end -->
+		
+		<!-- Footer div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/footerCreateDiv.js"></script>
+		<!-- //Footer div 생성영역 끝 -->
+		
+	</div>
+	<!-- //Wrap -->
+
+	<script type="text/javascript">
+	
+		var bxCnt  = 1;
+		var bxSlider = "";
+	
+		angular.module('sheduleApp', [])
+		.config(['$httpProvider', function($httpProvider) {
+				$httpProvider.defaults.useXDomain = true;
+				delete $httpProvider.defaults.headers.common['X-Requested-With'];
+			}
+		])
+		.directive('weekRepeat', function($timeout) {
+			return {
+				restrict: 'A',
+	            link : function(scope, elem, attr){
+	            	//console.log("aaaa = "+scope.$last);
+	            	if (scope.$last === true) {
+	            		//console.log("!!");
+	            		$timeout(function(){scope.setWeekBxSlider()},0);
+	            	}
+	            }
+			};
+		})
+		.directive('dailyRepeat', function($timeout) {
+			return {
+				restrict: 'A',
+	            link : function(scope, elem, attr){
+	            	//console.log("aaaa = "+scope.$last);
+	            	//alert("aaaa = "+scope.$index + "|"+scope.$last);
+	            	if (scope.$last === true) {
+	            		//console.log("!!" + scope.currPairingIdx);
+	            		$timeout(function(){scope.setClass(scope.currPairingIdx);},0);
+	            	}
+	            }
+			};
+		})
+		.controller('bodyCtrl', function ($rootScope, $scope, $timeout, $http, $sce) {
+	
+			$scope.currPairingIdx = "";			// 현제 방송 되고 있는 편성표의 키
+			$scope.choiceDayText = "";			// 선택된 날짜
+			$scope.currDayWeekInt = "";			// 선택된 날짜
+	
+	
+			$scope.weeklyDateList = [];			// 일주일 날짜 정보
+			$scope.dailyPairingList = [];		// 선택된 날짜의 편성표
+			$scope.cmmPairingInfo = {};			// 편성표 조회 조건 정보
+			$scope.cmmCodeChi0013 = {};			// 등급 정보
+	
+	
+			$scope.param = {};
+			var url = host+"/mobile/scheule.do";
+			console.log(url);
+	
+			$scope.contentLoad = function (){
+				var scParam = $scope.param;
+				console.log(scParam);
+	
+				$http.post(url, $.param(scParam), {
+					headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+				}).success(function(data){
+					console.log(data);
+	
+					$scope.currPairingIdx = data.currPairingIdx;			// 현제 방송 되고 있는 편성표의 키
+					$scope.choiceDayText = data.choiceDayText;				// 선택된 날짜
+					$scope.currDayWeekInt = data.currDayWeekInt;			// 선택되 날짜의 요일(숫자)
+	
+					$scope.weeklyDateList = data.weeklyDateList;			// 일주일 날짜 정보
+					$scope.dailyPairingList = data.dailyPairingList;		// 선택된 날짜의 편성표
+					$scope.cmmPairingInfo = data.cmmPairingInfo;			// 편성표 조회 조건 정보
+					$scope.cmmCodeChi0013 = data.cmmCodeChi0013;			// 등급 정보
+					//console.log($scope.currPairingIdx);
+	
+				}).error(function(data, status){
+					console.log('1'+data);
+				});
+			}
+	
+			// 현재 선택한 il 보이게 처리 및 활성화
+			$scope.setClass = function(currPairingIdx){
+	
+				//console.log(currPairingIdx);
+	
+				$('.plan-ul li').removeClass("active");
+				$('#activeLi_'+ currPairingIdx).addClass("active");
+	
+				$('.planproinfo-detail').css("display", "none");
+				$('#detailPairing_'+ currPairingIdx).css("display", "");
+			}
+	
+			// 한주 bxSlider 활성화
+			$scope.setWeekBxSlider = function(){
+	
+				var weekCnt = 0;
+	
+				if($scope.currDayWeekInt == 7){
+					weekCnt = 4;
+				}else if($scope.currDayWeekInt -2 > 0){
+					weekCnt = $scope.currDayWeekInt -2;
+				}
+	
+				if(bxCnt < 2){
+					 bxSlider = $('.schedule-subtab-ul').bxSlider({
+						infiniteLoop: false,
+						slideWidth: 80,
+						minSlides: 3,
+						maxSlides: 3,
+						moveSlides: 1,
+						slideMargin: 10,
+						startSlide : weekCnt
+					});
+	
+					bxCnt++;
+				}else{
+					bxSlider.reloadSlider({
+						infiniteLoop: false,
+						slideWidth: 80,
+						minSlides: 3,
+						maxSlides: 3,
+						moveSlides: 1,
+						slideMargin: 10,
+						startSlide : weekCnt
+					});
+				}
+	
+			}
+	
+			// 바로가기
+			$scope.moveLink = function(category, programIdx){
+	
+				// 뉴스일때
+				if(category == '1'){
+					var menuFlag = "A";
+					if(programIdx == "22"){
+						menuFlag = "B";
+					}
+					location.href = "news-main.html?menuFlag="+menuFlag;
+				}
+				// 프로그램 일때
+				else{
+					location.href = "pro-vodlist.html?programIdx="+programIdx;
+				}
+	
+			}
+	
+			// 날짜이동
+			$scope.moveDaily = function(searchPrevNext, searchStartDate){
+	
+				$scope.param = {searchPrevNext : searchPrevNext, searchStartDate : searchStartDate};
+	
+				$scope.contentLoad();
+			}
+	
+			// 한주 오늘날짜에 활성화
+			$scope.weekSetClass=function(weeklyDateList){
+	
+				if(weeklyDateList.yn == 'Y'){
+					return "active";
+				}else{
+					return "";
+				}
+			}
+	
+			// deliberatelyTrustDangerousSnippet
+			$scope.deliberatelyTrustDangerousSnippet = function(data) {
+				return $sce.trustAsHtml(data);
+			};
+	
+			$scope.contentLoad();
+		});
+	
+	</script>
+
+	<!-- 메뉴 생성 스크립트 시작(닫는 body 태그 위에 있어야 함.)  -->
+	<script type="text/javascript" src="../js/menuCreateDiv.js"></script>
+	<!-- 메뉴 생성 스크립트 끝                                    -->
+
+</body>
+</html>

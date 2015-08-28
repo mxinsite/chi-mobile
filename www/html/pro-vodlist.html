@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<link rel="shortcut icon" type="image/x-icon" href="../images/common/ico-chi.ico" />
+
+	<title>산업방송 채널i</title>
+	<!--include-->
+	<link href="../css/bootstrap.css" rel="stylesheet" type="text/css" />
+	<link href="../css/bootstrap-theme.css" rel="stylesheet" type="text/css" />
+	<link href="../css/font-awesome.css" rel="stylesheet" type="text/css" />
+	<link href="../css/layout.css" rel="stylesheet" type="text/css" />
+
+	<script type="text/javascript" src="../js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript" src="../js/common.js"></script>
+	<script type="text/javascript" src="../js/bootstrap.js"></script>
+	<script type="text/javascript" src="../js/jquery.bxslider.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular-resource.js"></script>
+	<script type="text/javascript" src="https://101.livere.co.kr/js/livere8_lib.js" charset="utf-8"></script>
+	<!--//include-->
+</head>
+<body ng-app="proApp">
+
+	<!-- Wrap -->
+	<div id="wrap">
+
+		<!-- Header div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/headerCreateDiv.js"></script>
+		<script type="text/javascript">
+			// 선택된 메뉴의 active class 설정
+			setTopMenuActiveClass("TOP_MENU_2");	// TOP_MENU_1 : 뉴스, TOP_MENU_2 : 프로그램, TOP_MENU_3 : 편성표, TOP_MENU_4 : ON-AIR, NONE : 미선택	
+		</script>
+		<!-- //Header div 생성영역 끝 -->
+
+		<!-- content start -->
+		<div id="body" ng-controller="bodyCtrl">
+			<!-- 프로그램 소개 동영상 영역 시작 -->
+			<div class="today-news" id="home_video">
+				<div class="pro-info-title">{{introInfo.programName}}</div>
+				<div class="mov-pic-box">
+	        		<div class="mov-play-box"><a href="" ng-click="moveMov(introInfo.prmMov2FullPath);" target="_parent"><img src="../images/common/ico-play.png" width="100" height="100" alt="VOD Play"></a></div>
+	        		<img src="{{introInfo.prmImg2FullPath}}" width="100%" alt="{{introInfo.programName}}">
+	   			</div>
+   			</div>
+			<!-- //프로그램 소개 동영상 영역 끝 -->
+
+			<!-- 탭 영역 시작 -->
+			<div class="pro-info-tab clearfix">
+				<ul>
+				<li id="infoTab1" class="active"><a href="" ng-click="onClickTabs('A');">프로그램 다시보기</a></li>
+				<!-- <li id="infoTab2"><a href="">댓글보기</a></li> -->
+				</ul>
+			</div>
+			<!-- //탭 영역 끝 -->
+
+			<!-- 프로그램 컨텐츠 리스트 시작 -->
+			<div class="newslist-box">
+				<ul>
+				<li ng-repeat="vod in vodList">
+					<a href="" ng-click="proView(vod);">
+						<div class="newslist-img">
+							<div class="newslist-img-part {{vod.categoryCssClass}}"></div>
+							<img src="{{vod.cntImg1FullPath}}" width="100%" alt="{{vod.title}}">
+						</div>
+						<div class="newslist-title">
+							<dl>
+							<dt ng-bind-html="deliberatelyTrustDangerousSnippet(vod.title)"></dt>
+							<dd>등록 {{vod.showtime}}</dd>
+							<dd ng-bind-html="deliberatelyTrustDangerousSnippet(vod.summary)"></dd>
+							</dl>
+						</div>
+					</a>
+					<div class="clear"></div>
+				</li>
+				</ul>
+			</div>
+			<div style="margin-bottom:10px;">
+				<button class="btn btn-default" style="width:100%;" ng-click="addList();"><i class="fa fa-chevron-down"></i>&nbsp;더보기</button>
+			</div>
+			<!-- //프로그램 컨텐츠 리스트 끝 -->
+			
+			<!-- vodViewCtrl -->
+			<div ng-controller="vodViewCtrl">
+				<form name="vodViewForm" action="pro-view.html" method="GET">
+					<input type='hidden' id='idx' name='idx' value=''>
+					<input type='hidden' id='detailIdx' name='detailIdx' value=''>
+				</form>
+			</div>
+			<!-- //vodViewCtrl -->
+			
+		</div>
+		<!-- //content end -->
+
+		<!-- Footer div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/footerCreateDiv.js"></script>
+		<!-- //Footer div 생성영역 끝 -->
+
+	</div>
+	<!-- //Wrap -->
+
+	<script type="text/javascript">
+		angular.module('proApp', [])
+		.config(['$httpProvider', function($httpProvider) {
+				$httpProvider.defaults.useXDomain = true;
+				delete $httpProvider.defaults.headers.common['X-Requested-With'];
+			}
+		])
+		.controller('bodyCtrl', function ($rootScope, $scope, $timeout, $http, $sce) {
+
+			$scope.introInfo = {};		// 프로그램 소개 동영상
+			$scope.vodList = [];			// 프로그램 다시보기 리스트
+			$scope.programIdx = {};	// 메뉴구분
+
+			$scope.param = {programIdx:getParameter("programIdx"), pageIndex:1};
+			var url = host+"/mobile/vodList.do";
+			console.log(url);
+
+			// call
+			$scope.contentLoad = function (){
+				var scParam = $scope.param;
+				console.log(scParam);
+				$http.post(url, $.param(scParam), {
+					headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+				}).success(function(data){
+					console.log(data);
+
+					// 요청결과 설정
+					$scope.introInfo = data.programIntroInfo;		// 모바일인트로 리스트
+					console.log($scope.introInfo.prmMov2FullPath);
+					// 기존 프로그램 다시보기 리스트에 프로그램 리스트 추가
+					for (var i=0; i< data.vodList.length; i++){
+						$scope.vodList.push(data.vodList[i]);
+					}
+
+					// 이미지 위에 덧씌울 카테고리 이미지 css class 설정
+					for(var i=0; i<$scope.vodList.length; i++){
+						// 이미지 위에 덧씌울 카테고리 이미지 css class 설정
+						if($scope.vodList[i].category == "14"){
+							$scope.vodList[i].categoryCssClass = "img-part01";
+						} else if($scope.vodList[i].category == "3"){
+							$scope.vodList[i].categoryCssClass = "img-part02";
+						} else if($scope.vodList[i].category == "4"){
+							$scope.vodList[i].categoryCssClass = "img-part03";
+						} else if($scope.vodList[i].category == "5"){
+							$scope.vodList[i].categoryCssClass = "img-part04";
+						} else if($scope.vodList[i].category == "6"){
+							$scope.vodList[i].categoryCssClass = "img-part05";
+						} else if($scope.vodList[i].category == "8"){
+							$scope.vodList[i].categoryCssClass = "img-part06";
+						} else if($scope.vodList[i].category == "10"){
+							$scope.vodList[i].categoryCssClass = "img-part07";
+						} else if($scope.vodList[i].category == "9"){
+							$scope.vodList[i].categoryCssClass = "img-part08";
+						}
+					}
+
+				}).error(function(data, status){
+					console.log(data);
+				});
+			}
+
+			// 프로그램 탭 선택시 처리
+			$scope.onClickTabs = function(gubun){
+				// 프로그램 탭 class 속성 제거
+				$(".pro-info-tab li").removeClass("active");
+				$scope.param.categoryFlag = '';
+
+				if (gubun == 'A'){			// 방영프로그램
+					$("#infoTab1").addClass("active");
+					$scope.contentLoad();
+				} else if (gubun == 'B'){	// 종영프로그램
+					$("#infoTab2").addClass("active");
+				}
+
+				// 변수초기화
+				$scope.introList = [];		// 모바일인트로 리스트
+				$scope.programList = [];	// 프로그램 리스트
+				$scope.param.pageIndex = 1;
+				// 검색
+				$scope.contentLoad();
+			}
+
+			// deliberatelyTrustDangerousSnippet
+			$scope.deliberatelyTrustDangerousSnippet = function(data) {
+				return $sce.trustAsHtml(data);
+			};
+
+			// 프로그램 상세조회
+			$scope.proView = function(obj){
+				$rootScope.$broadcast('vodView', obj);
+			}
+
+			// 동영상 이동
+			$scope.moveMov = function(movUrl){
+				location.href = movieHostByAndroid + movUrl;
+			}
+
+			// 더보기 클릭시 처리
+			$scope.addList=function(){
+				$scope.param.pageIndex = $scope.param.pageIndex + 1;
+				$scope.contentLoad();
+			}
+
+			$scope.contentLoad();	// call
+		}).controller('vodViewCtrl',function($rootScope, $scope, $http) {
+			$scope.$on('vodView', function(e, obj){
+				vodViewForm.idx.value = obj.idx;
+				vodViewForm.detailIdx.value = obj.detailIdx;
+				vodViewForm.submit();
+	        });
+		});
+
+	</script>
+	
+	<!-- 메뉴 생성 스크립트 시작(닫는 body 태그 위에 있어야 함.)  -->
+	<script type="text/javascript" src="../js/menuCreateDiv.js"></script>
+	<!-- 메뉴 생성 스크립트 끝                                    -->
+
+</body>
+</html>

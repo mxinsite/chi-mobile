@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<link rel="shortcut icon" type="image/x-icon" href="../images/common/ico-chi.ico" />
+
+	<title>산업방송 채널i</title>
+	<!--include-->
+	<link href="../css/bootstrap.css" rel="stylesheet" type="text/css" />
+	<link href="../css/bootstrap-theme.css" rel="stylesheet" type="text/css" />
+	<link href="../css/font-awesome.css" rel="stylesheet" type="text/css" />
+	<link href="../css/layout.css" rel="stylesheet" type="text/css" />
+
+	<script type="text/javascript" src="../js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript" src="../js/common.js"></script>
+	<script type="text/javascript" src="../js/bootstrap.js"></script>
+	<script type="text/javascript" src="../js/jquery.bxslider.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular-resource.js"></script>
+	<script type="text/javascript" src="https://101.livere.co.kr/js/livere8_lib.js" charset="utf-8"></script>
+	<!--//include-->
+</head>
+
+<body ng-app="mainApp">
+	<!-- Wrap -->
+	<div id="wrap">
+	
+		<!-- Header div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/headerCreateDiv.js"></script>
+		<script type="text/javascript">
+			// 선택된 메뉴의 active class 설정
+			setTopMenuActiveClass("NONE");	// TOP_MENU_1 : 뉴스, TOP_MENU_2 : 프로그램, TOP_MENU_3 : 편성표, TOP_MENU_4 : ON-AIR, NONE : 미선택	
+		</script>
+		<!-- //Header div 생성영역 끝 -->
+
+		<!-- content start -->
+		<div id="body" ng-controller="bodyCtrl">
+			<!-- 모바일인트로 영역 시작 -->
+			<div class="main-rolling-box">
+				<ul class="main-rolling-ul">
+				<li ng-repeat="rolling in mainRolling" main-rolling-repeat>
+					<a href="#"><img src="{{rolling.fileFullPathName}}" width="100%" alt="{{rolling.title}}"></a>
+				</li>
+				</ul>
+			</div>
+			<!-- //모바일인트로 영역 끝 -->
+
+			<!-- ON-AIR 영역 시작 -->
+			<div class="onair-box clearfix">
+				<div class="onair-nowico img-group">NOW</div>
+				<div class="onair-title">ON AIR</div>
+				<div class="pro-name" id="on_air">
+					<a href="onair.html"><strong>{{pairingList[0].time}}</strong>&nbsp;&nbsp;{{pairingList[0].title}}</a>
+				</div>
+			</div>
+			<!-- //ON-AIR 영역 끝 -->
+
+			<!-- Headline 금일뉴스 영역 시작 -->
+			<div class="content-box">
+				<div class="content-title"><span>Headline</span> 금일뉴스</div>
+				<div class="content-body" id="headline">
+					<dl>
+						<dt><a href="" ng-click="setMoveNewsProgram(headline);">{{headline.title}}</a></dt>
+						<dd>{{headline.summary}}</dd>
+						<dd><a href="" ng-click="setMoveNewsProgram(headline);"><img src="{{headline.cntImg1FullPath}}" width="140" height="79" alt="{{headline.title}}"></a></dd>
+					</dl>
+				</div>
+			</div>
+			<!-- //Headline 금일뉴스 영역 끝 -->
+
+			<!-- Weekly 하이라이트 영역 시작 -->
+			<div class="content-box">
+				<div class="content-title"><span>Weekly</span> 하이라이트</div>
+				<div class="content-body" id="weekly">
+					<dl>
+						<dt><a href="" ng-click="setMoveNewsProgram(weekly);">{{weekly.title}}</a></dt>
+						<dd>{{weekly.summary}}</dd>
+						<dd><a href="" ng-click="setMoveNewsProgram(weekly);"><img src="{{weekly.cntImg1FullPath}}" width="140" height="79" alt="{{weekly.title}}"></a></dd>
+					</dl>
+				</div>
+			</div>
+			<!-- //Weekly 하이라이트 영역 끝 -->
+
+			<!-- 최신 VOD 영역 시작 -->
+			<div class="content-box">
+				<div class="content-title"><span>최신</span> VOD</div>
+				<div class="content-body">
+					<ul class="newest-rolling" id="new_vod">
+						<li ng-repeat="mainTop in new_vod" vod-rolling-repeat>
+							<dl>
+								<dt><a href="" ng-click="setMoveNewsProgram(mainTop);">{{mainTop.title}}</a></dt>
+								<dd>{{mainTop.title}}</dd>
+								<dd><a href="" ng-click="setMoveNewsProgram(mainTop);"><img src="{{mainTop.cntImg1FullPath}}" width="140" height="79" alt="{{mainTop.title}}"></a></dd>
+							</dl>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<!-- //최신 VOD 영역 끝 -->
+
+			<!-- 인기 VOD 영역 시작 -->
+			<div class="content-box">
+				<div class="content-title"><span>인기</span> VOD</div>
+				<div class="content-body">
+					<ul class="newest-rolling" id="popularity_vod">
+						<li ng-repeat="mainPop in popularity_vod" vod-rolling-repeat>
+							<dl>
+								<dt><a href="" ng-click="setMoveNewsProgram(mainPop);">{{mainPop.title}}</a></dt>
+								<dd>{{mainPop.title}}</dd>
+								<dd><a href="" ng-click="setMoveNewsProgram(mainPop);"><img src="{{mainPop.attachFullPath}}" width="140" height="79" alt="{{mainPop.title}}"></a></dd>
+							</dl>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<!-- //인기 VOD 영역 끝 -->
+
+			<!-- 편성표 영역 시작 -->
+			<div class="content-box">
+				<div class="content-title">
+					편성표
+					<a href="pairing.html"><i class="fa fa-list-alt"></i>&nbsp;편성표전체보기</a>
+				</div>
+				<div class="content-body">
+					<ul class="schedule_time" id="pairing">
+						<li ng-repeat="pairing in pairingList">
+							<div class="time">{{pairing.startTime}}</div>
+							<a href="onair.html" ng-show="$index == 0">{{pairing.title}}</a>
+							<a href="" ng-click="setMoveNewsProgram(pairing);" ng-show="$index > 0">{{pairing.title}}</a>
+							<span class="img-group" ng-show="$index == 0">on-air</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<!-- //편성표 영역 끝 -->
+
+			<!-- 공지사항 영역 시작 -->
+			<div class="notice-box clearfix">
+				<div class="notice-title"><a href="noticeList.html">공지사항</a></div>
+				<div class="notice-name"><a href="noticeView.html?articleIdx={{notice[0].articleIdx}}">&nbsp;{{notice[0].title}}</a></div>
+			</div>
+			<!-- //공지사항 영역 끝 -->
+
+			<div class="ch-info">
+				<a href="chInfo.html"><img src="../images/common/btn-chinfo.png" alt="산업방송채널i - 채널번호안내" width="100%"></a>
+			</div>
+
+			<div class="social-info clearfix">
+				<ul>
+				<li><a class="img-group" href="https://www.facebook.com/industryTV" target="_blank">페이스북</a></li>
+				<li><a class="img-group" href="https://www.youtube.com/user/kimackorea" target="_blank">유투브</a></li>
+				</ul>
+			</div>
+
+		</div>
+		<!-- //content end -->
+
+		<!-- Footer div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/footerCreateDiv.js"></script>
+		<!-- //Footer div 생성영역 끝 -->
+		
+	</div>
+	<!-- //Wrap -->
+	
+	<script type="text/javascript">
+		var mainRollingBxCnt = 1;
+		var vodBxCnt = 1;
+		var mainRollingBxSlider = "";
+		var vodBxSlider = "";
+		
+		angular.module('mainApp', [])
+		.config(['$httpProvider', function($httpProvider) {
+				$httpProvider.defaults.useXDomain = true;
+				delete $httpProvider.defaults.headers.common['X-Requested-With'];
+			}
+		])
+		.directive('mainRollingRepeat', function($timeout) {
+			return {
+				restrict: 'A',
+	            link : function(scope, elem, attr){
+	            	if (scope.$last === true) {
+	            		$timeout(function(){scope.setMainRollingBxSlider()},0);
+	            	}
+	            }
+			};
+		})
+		.directive('vodRollingRepeat', function($timeout) {
+			return {
+				restrict: 'A',
+	            link : function(scope, elem, attr){
+	            	if (scope.$last === true) {
+	            		$timeout(function(){scope.setVodRollingBxSlider()},0);
+	            	}
+	            }
+			};
+		})
+		.controller('bodyCtrl', function ($rootScope, $scope, $timeout, $http) {
+			$scope.mainRolling = [];
+			$scope.headline = {};
+			$scope.weekly = {};
+			$scope.new_vod = [];
+			$scope.popularity_vod = [];
+			$scope.pairingList = [];
+			$scope.notice = [];
+
+			var url = host+"/mobile/main.do";
+			console.log(url);
+
+			// call
+			$scope.contentLoad = function (){
+				console.log("start");
+				$http.post(url, {
+					headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+				}).success(function(data){
+					console.log("success");
+					console.log(data);
+					$scope.mainRolling = data.mainRollImgList
+					$scope.headline = data.cmmProgramNewsInfo;
+					$scope.weekly = data.weeklyHighlightInfo;
+					$scope.new_vod = data.mainTopContentsList;
+					$scope.popularity_vod = data.popVodList;
+					$scope.pairingList = data.pairingList;
+					$scope.notice = data.articleList;
+
+					/* for(var i=0; i<$scope.mainRolling.length; i++){
+						$scope.mainRolling[i].fileFullPathName = host + $scope.mainRolling[i].fileFullPathName;
+					} */
+
+					for (var i=0; i < $scope.pairingList.length; i++){
+						if (i == 0){
+							$scope.pairingList[0].time = $scope.pairingList[0].startTime+"~"+$scope.pairingList[0].endTime;
+						}
+					}
+					console.log($scope.pairingList);
+				}).error(function(data, status){
+					console.log(data);
+				});
+			}
+			
+			$scope.setMoveNewsProgram = function(obj){
+				console.log("category : " + obj.category);
+				console.log("programIdx : " + obj.programIdx);
+				console.log("contentIdx : " + obj.contentIdx);
+				
+				var moveUrl = "";
+				if(obj.category == "1") {
+					moveUrl = "news-view.html";
+					moveUrl += "?programIdx=" + obj.programIdx;
+					moveUrl += "&contentIdx=" + obj.contentIdx;
+				} else {
+					moveUrl = "pro-vodlist.html";
+					moveUrl += "?programIdx=" + obj.programIdx;
+				}
+				
+				location.href = moveUrl;
+			}
+
+			// 메인롤링
+			$scope.setMainRollingBxSlider = function(){
+				if(mainRollingBxCnt < 2){
+					mainRollingBxSlider = $('.main-rolling-ul').bxSlider({
+						 auto: true,
+						 pager: true,
+						 //autoControls: true,
+						 pause: 4000,
+						 speed: 700
+					});
+
+					 mainRollingBxCnt++;
+				}else{
+					mainRollingBxSlider.reloadSlider({
+						 auto: true,
+						 pager: true,
+						 //autoControls: true,
+						 pause: 4000,
+						 speed: 700
+					});
+				}
+			}
+
+			// VOD 롤링
+			$scope.setVodRollingBxSlider = function(){
+				if(vodBxCnt < 2){
+					vodBxSlider = $('.newest-rolling').bxSlider({
+						//auto: true,
+						pager: true,
+						//autoControls: false,
+						slideWidth: 140,
+						minSlides: 2,
+						maxSlides: 2,
+						moveSlides: 1,
+						slideMargin: 10,
+						nextSelector: '#slider-next',
+						prevSelector: '#slider-prev',
+						pause: 4000,
+						speed: 700
+					});
+
+					vodBxCnt++;
+				}else{
+					/* vodBxSlider.reloadSlider({
+						//auto: true,
+						pager: true,
+						//autoControls: false,
+						slideWidth: 140,
+						minSlides: 2,
+						maxSlides: 2,
+						moveSlides: 1,
+						slideMargin: 10,
+						nextSelector: '#slider-next',
+						prevSelector: '#slider-prev',
+						pause: 4000,
+						speed: 700
+					}); */
+				}
+			}
+
+			$scope.contentLoad();	// call
+		});
+	</script>
+	
+	<!-- 메뉴 생성 스크립트 시작(닫는 body 태그 위에 있어야 함.)  -->
+	<script type="text/javascript" src="../js/menuCreateDiv.js"></script>
+	<!-- 메뉴 생성 스크립트 끝                                    -->
+	
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<link rel="shortcut icon" type="image/x-icon" href="../images/common/ico-chi.ico" />
+
+	<title>산업방송 채널i</title>
+	<!--include-->
+	<link href="../css/bootstrap.css" rel="stylesheet" type="text/css" />
+	<link href="../css/bootstrap-theme.css" rel="stylesheet" type="text/css" />
+	<link href="../css/font-awesome.css" rel="stylesheet" type="text/css" />
+	<link href="../css/layout.css" rel="stylesheet" type="text/css" />
+
+	<script type="text/javascript" src="../js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript" src="../js/common.js"></script>
+	<script type="text/javascript" src="../js/bootstrap.js"></script>
+	<script type="text/javascript" src="../js/jquery.bxslider.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular-resource.js"></script>
+	<script type="text/javascript" src="https://101.livere.co.kr/js/livere8_lib.js" charset="utf-8"></script>
+	<!--//include-->
+</head>
+<body ng-app="noticeViewApp">
+
+	<!-- Wrap -->
+	<div id="wrap">
+	
+		<!-- Header div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/headerCreateDiv.js"></script>
+		<script type="text/javascript">
+			// 선택된 메뉴의 active class 설정
+			setTopMenuActiveClass("NONE");	// TOP_MENU_1 : 뉴스, TOP_MENU_2 : 프로그램, TOP_MENU_3 : 편성표, TOP_MENU_4 : ON-AIR, NONE : 미선택	
+		</script>
+		<!-- //Header div 생성영역 끝 -->
+
+		<!-- content start -->
+		<div id="body" ng-controller="bodyCtrl">
+
+			<div class="content-box">
+				<div class="content-title"><span>공지</span> 사항</div>
+				<div class="content-body" style="padding:0;">
+					<table class="tbl-notice-view" width="100%" border="0" cellspacing="0" cellpadding="0">
+						<tbody>
+							<tr>
+								<th scope="row">{{articleInfo.title}}</th>
+							</tr>
+							<tr>
+								<td ng-bind-html="deliberatelyTrustDangerousSnippet(articleInfo.content)"></td>
+							</tr>
+							<!-- 
+								<tr>
+									<td>
+										<ul class="att-file-list" ng-repeat="attach in attachList">
+										<li><a href="" ng-click="downloadFile(attach.attachIdx);" class="btn btn-default btn-xs"><i class="fa fa-paperclip"></i> {{attach.attachName}}</a></li>
+										<li><a href="{{attach.attachUrl}}" class="btn btn-default btn-xs"><i class="fa fa-paperclip"></i> {{attach.attachName}}</a></li>
+										</ul>
+									</td>
+								</tr> 
+							-->
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div style="margin-bottom:10px;">
+				<button class="btn btn-default" style="width:100%;" ng-click="noticeList();"><i class="fa fa-list"></i>&nbsp;목록보기</button>
+			</div>
+		</div>
+		<!-- //content end -->
+		
+		<!-- downloadFormCtrl -->
+		<div ng-controller="downloadFormCtrl">
+			<form name="downloadForm" action="/common/downloadFile.do" method="post" target="_top">
+				<input type='hidden' id='attachIdx' name='attachIdx' value=''>
+			</form>
+		</div>
+		<!-- //downloadFormCtrl -->
+		
+		<!-- Footer div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/footerCreateDiv.js"></script>
+		<!-- //Footer div 생성영역 끝 -->
+	
+	</div>
+	<!-- //Wrap -->
+
+	<script type="text/javascript">
+		angular.module('noticeViewApp', [])
+		.config(['$httpProvider', function($httpProvider) {
+				$httpProvider.defaults.useXDomain = true;
+				delete $httpProvider.defaults.headers.common['X-Requested-With'];
+			}
+		])
+		.controller('bodyCtrl', function ($rootScope, $scope, $timeout, $http, $sce) {
+
+			$scope.masterInfo = {};
+			$scope.articleInfo = [];
+			$scope.attachList = [];
+
+			$scope.param = {articleIdx:getParameter("articleIdx")};
+			var url = host+"/mobile/noticeView.do";
+			console.log(url);
+
+			// call
+			$scope.contentLoad = function (){
+				var scParam = $scope.param;
+				console.log(scParam);
+				$http.post(url, $.param(scParam), {
+					headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+				}).success(function(data){
+					console.log(data);
+
+					$scope.masterInfo = data.masterInfo;
+					$scope.articleInfo = data.articleInfo;
+					$scope.attachList = data.attachList;
+
+					// 요청결과 설정
+					$scope.vodInfo = data.vodInfo;	// 프로그램 다시보기 상세
+
+				}).error(function(data, status){
+					console.log(data);
+				});
+			}
+
+			// deliberatelyTrustDangerousSnippet
+			$scope.deliberatelyTrustDangerousSnippet = function(data) {
+				return $sce.trustAsHtml(data);
+			};
+
+			// 목록보기 클릭 이벤트
+			$scope.noticeList=function(){
+				location.href="noticeList.html";
+			}
+
+			// 파일 다운로드
+			$scope.downloadFile=function(attachIdx){
+				$rootScope.$broadcast('download', attachIdx);
+			}
+
+			$scope.contentLoad();	// call
+
+		}).controller('downloadFormCtrl',function($rootScope, $scope, $http) {
+			$scope.$on('download', function(e, attachIdx){
+				downloadForm.attachIdx.value = attachIdx;
+				downloadForm.action=host+"/common/downloadFile.do";
+				downloadForm.submit();
+	        });
+		});
+
+	</script>
+
+	<!-- 메뉴 생성 스크립트 시작(닫는 body 태그 위에 있어야 함.)  -->
+	<script type="text/javascript" src="../js/menuCreateDiv.js"></script>
+	<!-- 메뉴 생성 스크립트 끝                                    -->
+
+</body>
+</html>

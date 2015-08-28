@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<link rel="shortcut icon" type="image/x-icon" href="../images/common/ico-chi.ico" />
+	
+	<title>산업방송 채널i</title>
+	<!--include-->
+	<link href="../css/bootstrap.css" rel="stylesheet" type="text/css" />
+	<link href="../css/bootstrap-theme.css" rel="stylesheet" type="text/css" />
+	<link href="../css/font-awesome.css" rel="stylesheet" type="text/css" />
+	<link href="../css/layout.css" rel="stylesheet" type="text/css" />
+	
+	<script type="text/javascript" src="../js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript" src="../js/common.js"></script>
+	<script type="text/javascript" src="../js/bootstrap.js"></script>
+	<script type="text/javascript" src="../js/jquery.bxslider.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular-resource.js"></script>
+	<script type="text/javascript" src="https://101.livere.co.kr/js/livere8_lib.js" charset="utf-8"></script>
+	<!--//include-->
+</head>
+	
+<body ng-app="searchApp">
+
+	<!-- Wrap -->
+	<div id="wrap">
+		
+		<!-- Header div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/headerCreateDiv.js"></script>
+		<script type="text/javascript">
+			// 선택된 메뉴의 active class 설정
+			setTopMenuActiveClass("NONE");	// TOP_MENU_1 : 뉴스, TOP_MENU_2 : 프로그램, TOP_MENU_3 : 편성표, TOP_MENU_4 : ON-AIR, NONE : 미선택	
+		</script>
+		<!-- //Header div 생성영역 끝 -->
+		
+		<!-- content start -->
+		<div id="body" ng-controller="bodyCtrl">
+			<div class="search-box">
+				<input id="searchText" name="searchText" type="text" class="form-control top-search"  title="통합검색" placeholder="Search for..." value="{{searchText}}">
+				<button class="btn btn-default top-search-btn" type="button" ng-click="search();"><i class="fa fa-search"></i></button>
+			</div>
+			<div class="search-tab clearfix">
+				<ul class="search-tab-ul">
+				<li class="{{setClass(searchTerm.searchCode, 'P')}}"><a href="" ng-click="moveTab('P');">프로그램&nbsp;<span>({{searchTerm.searchTotalCnt[0]}})</span></a></li>
+				<li class="{{setClass(searchTerm.searchCode, 'N')}}"><a href="" ng-click="moveTab('N');">뉴스VOD&nbsp;<span>({{searchTerm.searchTotalCnt[1]}})</span></a></li>
+				<li class="{{setClass(searchTerm.searchCode, 'C')}}"><a href="" ng-click="moveTab('C');">프로그램VOD&nbsp;<span>({{searchTerm.searchTotalCnt[2]}})</span></a></li>
+				</ul>
+			</div>
+			<div class="newslist-box">
+				<ul>
+				<!--프로그램일때 방여시간 및 시청등급이 나옴-->
+				<li ng-repeat="content in contentsList">
+					<a href="" ng-click="moveProDetail(searchTerm.searchCode, content.contentIdx, content.programIdx);">
+						<div class="newslist-img"><img src="{{content.cntImg1FullPath}}" width="100%" /></div>
+						<div class="newslist-title">
+							<dl>
+								<dt>{{content.title}}</dt>
+								<dd ng-show="searchTerm.searchCode == 'P' && content.showTime != ''">
+									방영시간 {{content.showTime}}&nbsp;
+									<span class="label label-primary" ng-show="content.programGrade == '1'">all</span>
+									<span class="label label-info" ng-show="content.programGrade == '2'">7</span>
+									<span class="label label-success" ng-show="content.programGrade == '3'">12</span>
+									<span class="label label-warning" ng-show="content.programGrade == '4'">15</span>
+									<span class="label label-danger" ng-show="content.programGrade == '5'">19</span>
+								</dd>
+								<dd ng-show="searchTerm.searchCode != 'P' && content.showTime != ''">
+									등록 {{content.showTime}}
+								</dd>
+								<dd ng-bind-html="deliberatelyTrustDangerousSnippet(content.summary)"></dd>
+							</dl>
+						</div>
+					</a>
+					<div class="clear"></div>
+				</li>
+				<!--//프로그램일때 방여시간 및 시청등급이 나옴-->
+				<!--//뉴스 및 프로그램VOD일때 등록일만 나옴-->
+				<!-- <li>
+					<a href="#">
+						<div class="newslist-img"><img src="/images/common/main-roll-img01.png" width="100%"></div>
+						<div class="newslist-title">
+							<dl>
+							<dt>[프로그램명]방영회차제목</dt>
+							<dd>등록 2015.08.12</dd>
+							<dd>(1)산업계 출신 민간전문가 PD 채용 확대(2)7월 ICT...</dd>
+							</dl>
+						</div>
+					</a>
+					<div class="clear"></div>
+				</li> -->
+				</ul>
+			</div>
+			<div style="margin-bottom:10px;">
+				<button class="btn btn-default" style="width:100%;" ng-click="contentMore();"><i class="fa fa-chevron-down"></i>&nbsp;더보기</button>
+			</div>
+		</div>
+		<!-- //content end -->
+		
+		<!-- Footer div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/footerCreateDiv.js"></script>
+		<!-- //Footer div 생성영역 끝 -->
+		
+	</div>
+	<!-- //Wrap -->
+	
+	<script type="text/javascript">
+		angular.module('searchApp', [])
+		.config(['$httpProvider', function($httpProvider) {
+				$httpProvider.defaults.useXDomain = true;
+				delete $httpProvider.defaults.headers.common['X-Requested-With'];
+			}
+		])
+		.controller('bodyCtrl', function ($rootScope, $scope, $timeout, $http, $sce) {
+			$scope.searchText = getParameter("searchText");
+			
+			$scope.searchTerm = {};
+			$scope.contentsList = [];
+			
+			console.log(getParameter("searchText"));
+			
+			$scope.param = {searchText:$scope.searchText, pageIndex:1, searchCode:""};
+			
+			var url = host+"/mobile/Search.do";
+			
+			// call
+			$scope.contentLoad = function (){
+				
+				var scParam = $scope.param;
+				
+				$http.post(url, $.param(scParam), {
+					headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+				}).success(function(data){
+					console.log(data);
+					$scope.searchTerm = data.searchTerm;
+					$scope.searchText = data.searchTerm.searchText;
+					
+					if ($scope.searchTerm.searchCode == "P"){
+						if (data.cmmProgramList.length > 0){
+							for (var i=0; i< data.cmmProgramList.length; i++){
+								$scope.contentsList.push({title : data.cmmProgramList[i].programName, 
+														summary : data.cmmProgramList[i].programIntro, 
+														programGrade : data.cmmProgramList[i].programViewGrade,
+														showTime : data.cmmProgramList[i].showtime,
+														cntImg1FullPath : data.cmmProgramList[i].prmImg1FullPath,
+														programIdx : data.cmmProgramList[i].programIdx});
+							}
+							
+						}
+					}else if ($scope.searchTerm.searchCode != "P"){
+						if (data.cmmContentList.length > 0){
+							for (var i=0; i< data.cmmContentList.length; i++){
+								$scope.contentsList.push({title : data.cmmContentList[i].title, 
+														summary : data.cmmContentList[i].summary, 
+														showTime : data.cmmContentList[i].publicDate,
+														cntImg1FullPath : data.cmmContentList[i].cntImg1FullPath,
+														contentIdx : data.cmmContentList[i].contentIdx,
+														programIdx : data.cmmContentList[i].programIdx});
+							}
+						}
+					}
+					
+					console.log($scope.contentsList);
+				}).error(function(data, status){
+					console.log(data);
+				});
+			}
+			
+			// 텝 메뉴 활성화 기능
+			$scope.setClass = function(code, gubun){
+				if (code == gubun){
+					return "active";
+				}else{
+					return "";
+				}
+			}
+			
+			// 텝메뉴 이동
+			$scope.moveTab = function(gubun){
+				if (gubun != $scope.searchTerm.searchCode){
+					$scope.param = {searchText:$scope.searchText, pageIndex:1, searchCode:gubun};
+					$scope.contentsList = [];
+					$scope.contentLoad();
+				}
+			}
+			
+			// 검색
+			$scope.search = function(){
+				$scope.param = {searchText:$('#searchText').val(), pageIndex:1, searchCode:"P"};
+				$scope.contentsList = [];
+				$scope.contentLoad();
+			}
+			
+			// 더보기 기능
+			$scope.contentMore = function(){
+				$scope.param.pageIndex = $scope.param.pageIndex + 1;
+				$scope.contentLoad();
+			}
+			
+			// deliberatelyTrustDangerousSnippet
+			$scope.deliberatelyTrustDangerousSnippet = function(data) {
+				return $sce.trustAsHtml(data);
+			};
+			
+			// 상세보기 기능
+			$scope.moveProDetail = function (gubun, contentIdx, programIdx){
+				if ($scope.searchTerm.searchCode == "P"){
+					location.href = "pro-vodlist.html?programIdx="+programIdx;
+				}else if ($scope.searchTerm.searchCode == "N"){
+					location.href = "news-view.html?programIdx="+programIdx+"&contentIdx="+contentIdx;
+				}else if ($scope.searchTerm.searchCode == "C"){
+					location.href = "pro-view.html?idx="+programIdx+"&detailIdx="+contentIdx;
+				}
+			}
+			$scope.contentLoad();
+		});
+	</script>
+
+	<!-- 메뉴 생성 스크립트 시작(닫는 body 태그 위에 있어야 함.)  -->
+	<script type="text/javascript" src="../js/menuCreateDiv.js"></script>
+	<!-- 메뉴 생성 스크립트 끝                                    -->
+
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<link rel="shortcut icon" type="image/x-icon" href="../images/common/ico-chi.ico" />
+
+	<title>산업방송 채널i OnAir</title>
+	<!--include-->
+	<link href="../css/bootstrap.css" rel="stylesheet" type="text/css" />
+	<link href="../css/bootstrap-theme.css" rel="stylesheet" type="text/css" />
+	<link href="../css/font-awesome.css" rel="stylesheet" type="text/css" />
+	<link href="../css/layout.css" rel="stylesheet" type="text/css" />
+
+	<script type="text/javascript" src="../js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript" src="../js/common.js"></script>
+	<script type="text/javascript" src="../js/bootstrap.js"></script>
+	<script type="text/javascript" src="../js/jquery.bxslider.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular-resource.js"></script>
+	<script type="text/javascript" src="https://101.livere.co.kr/js/livere8_lib.js" charset="utf-8"></script>
+	<!--//include-->
+</head>
+
+<body ng-app="onairApp">
+
+	<!-- Wrap -->
+	<div id="wrap">
+
+		<!-- Header div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/headerCreateDiv.js"></script>
+		<script type="text/javascript">
+			// 선택된 메뉴의 active class 설정
+			setTopMenuActiveClass("TOP_MENU_4");	// TOP_MENU_1 : 뉴스, TOP_MENU_2 : 프로그램, TOP_MENU_3 : 편성표, TOP_MENU_4 : ON-AIR, NONE : 미선택	
+		</script>
+		<!-- //Header div 생성영역 끝 -->
+
+		<!-- content start -->
+		<div id="body" ng-controller="bodyCtrl">
+			<div class="onair-page-title"><span>ON-AIR</span></div>
+			<div class="onair-page-body">
+				<ul>
+				<li>
+					<div class="onair-now-vod">
+						<div class="onair-vod-img">
+							<div class="onair-now-vod-label"><img src="../images/common/now-label.png" width="59" height="59" alt="NOW"></div>
+							<div class="mov-pic-box">
+				        		<div class="mov-play-box"><a href="rtsp://222.122.31.168/live/stream.sdp" target="_parent"><img src="../images/common/ico-play.png" width="100" height="100" alt="VOD Play"></a></div>
+				        		<img src="{{pairingList[0].pairingImgPath}}" width="100%" alt="{{pairingList[0].title}}">
+				   			</div>
+						</div>
+						<div class="onair-vod-time">{{pairingList[0].startTimeName}}</div>
+						<div class="onair-vod-title">{{pairingList[0].title}}</div>
+						<div><a href="rtsp://222.122.31.168/live/stream.sdp" class="btn btn-danger" style="display:block;" target="_parent"><i class="fa fa-youtube-play"></i>&nbsp;ON-AIR VOD보기</a></div>
+					</div>
+				</li>
+				<li ng-repeat="pairing in pairingList" ng-show="$index >= 1"><span class="next-time">{{pairing.startTimeName}}</span><span class="next-title">{{pairing.title}}</span></li>
+				</ul>
+			</div>
+			<!-- comment start -->
+			<!-- 
+				<div class="content-box" style="background:#FFF; margin-top:10px;">
+					<div class="content-title"><span>ON-AIR</span> 댓글</div>
+					<div class="content-body">
+						<div class="con-comment" style="margin:0; padding:0;">
+							<div id="livereContainer">
+						<script type="text/javascript">
+							var consumer_seq = "1018";
+							var livere_seq = "23975";
+							var smartlogin_seq = "1272";
+							var title = "채널i 산업뉴스"; var refer = "www.misotech.net/jsp/main/news-view.jsp";
+							refer = refer.replace("http://","");
+							livereReply = new Livere( livere_seq , refer , title );
+							livereReply.description = "(1)근로시간제 탄력 운영, 청년 고용센터 설치<br>(2)취업자 증가 석 달째 30만 명대 머물러<br>(3)알츠하이머성 치매와 맞서 싸우다";
+							livereLib.start();
+						</script>
+	
+							</div>
+						</div>
+					</div>
+				</div> 
+			-->
+			<!-- //comment end -->
+		</div>
+		<!-- //content end -->
+
+		<!-- Footer div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/footerCreateDiv.js"></script>
+		<!-- //Footer div 생성영역 끝 -->
+
+	</div>
+	<!-- //Wrap -->
+
+	<script type="text/javascript">
+		angular.module('onairApp', [])
+		.config(['$httpProvider', function($httpProvider) {
+				$httpProvider.defaults.useXDomain = true;
+				delete $httpProvider.defaults.headers.common['X-Requested-With'];
+			}
+		])
+		.config(function($sceDelegateProvider) {
+			$sceDelegateProvider.resourceUrlWhitelist([
+				// Allow same origin resource loads.
+				'self',
+				// Allow loading from our assets domain.  Notice the difference between * and **.
+				movieHost+'/**'
+			]);
+		})
+		.controller('bodyCtrl', function ($rootScope, $scope, $timeout, $http, $sce) {
+			$scope.pairingList = [];
+			$scope.cmmSNSInfo = {};
+
+			var url = host+"/mobile/onairMain.do";
+			console.log(url);
+
+			$scope.contentLoad = function (){
+
+				$http.post(url, {
+					headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+				}).success(function(data){
+					console.log(data);
+
+					// SNS 설정
+					$scope.cmmSNSInfo = data.cmmSNSInfo;
+
+					// Onair 편성표 정보
+					$scope.pairingList = data.pairingList;
+
+					//snsSeting($scope.cmmSNSInfo);
+
+				}).error(function(data, status){
+					console.log('error');
+					console.log(data);
+				});
+			}
+
+			$scope.contentLoad();
+		});
+
+		function snsSeting(cmmSNSInfo){	
+/*
+				//alert(cmmSNSInfo);
+
+				//jQuery.noConflict();// 추가삽입
+
+				//alert('1');
+
+				var consumer_seq = "1018";
+				//alert('2');
+				var livere_seq = "23975";
+				//alert('3');
+				var smartlogin_seq = "1272";
+				//alert('4|' +  cmmSNSInfo.title);
+				var title = cmmSNSInfo.titme;
+				//alert('5|' +  cmmSNSInfo.siteUrl);
+				var refer = cmmSNSInfo.siteUrl;
+				//alert('6|');
+				refer = refer.replace("http://","");
+				//alert('7');
+				livereReply = new Livere( livere_seq , refer , title );
+				//alert('8');
+				//livereReply.description = "(1)근로시간제 탄력 운영, 청년 고용센터 설치<br>(2)취업자 증가 석 달째 30만 명대 머물러<br>(3)알츠하이머성 치매와 맞서 싸우다";
+				livereLib.start();
+				//alert('9');
+				*/
+		}
+	</script>
+
+	<!-- 메뉴 생성 스크립트 시작(닫는 body 태그 위에 있어야 함.)  -->
+	<script type="text/javascript" src="../js/menuCreateDiv.js"></script>
+	<!-- 메뉴 생성 스크립트 끝                                    -->
+
+</body>
+</html>

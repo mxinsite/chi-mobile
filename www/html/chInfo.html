@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<link rel="shortcut icon" type="image/x-icon" href="../images/common/ico-chi.ico" />
+
+	<title>산업방송 채널i</title>
+	<!--include-->
+	<link href="../css/bootstrap.css" rel="stylesheet" type="text/css" />
+	<link href="../css/bootstrap-theme.css" rel="stylesheet" type="text/css" />
+	<link href="../css/font-awesome.css" rel="stylesheet" type="text/css" />
+	<link href="../css/layout.css" rel="stylesheet" type="text/css" />
+
+	<script type="text/javascript" src="../js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript" src="../js/common.js"></script>
+	<script type="text/javascript" src="../js/bootstrap.js"></script>
+	<script type="text/javascript" src="../js/jquery.bxslider.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular-resource.js"></script>
+	<script type="text/javascript" src="https://101.livere.co.kr/js/livere8_lib.js" charset="utf-8"></script>
+	<!--//include-->
+</head>
+
+<body ng-app="chInfoApp">
+	
+	<!-- Wrap -->
+	<div id="wrap">
+	
+		<!-- Header div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/headerCreateDiv.js"></script>
+		<script type="text/javascript">
+			// 선택된 메뉴의 active class 설정
+			setTopMenuActiveClass("NONE");	// TOP_MENU_1 : 뉴스, TOP_MENU_2 : 프로그램, TOP_MENU_3 : 편성표, TOP_MENU_4 : ON-AIR, NONE : 미선택	
+		</script>
+		<!-- //Header div 생성영역 끝 -->
+	
+		<!-- content start -->
+		<div id="body" ng-controller="bodyCtrl">
+			<div class="content-box">
+				<div class="content-title"><span>채널번호</span> 안내</div>
+				<div class="content-body">
+					<img src="../images/common/ch-info.png" width="100%" alt="채널번호안내">
+				</div>
+			</div>
+
+			<div class="channel-subtab clearfix">
+				<ul class="channel-subtab-ul">
+					<li id="infoTab1" class="active"><a href="#" ng-click="onClickTabs('1');">서울</a></li>
+					<li id="infoTab2"><a href="#" ng-click="onClickTabs('2');">인천/경기</a></li>
+					<li id="infoTab3"><a href="#" ng-click="onClickTabs('3');">대구/경북</a></li>
+					<li id="infoTab4"><a href="#" ng-click="onClickTabs('4');">부산/경남</a></li>
+					<li id="infoTab5"><a href="#" ng-click="onClickTabs('5');">광주/전라</a></li>
+					<li id="infoTab6"><a href="#" ng-click="onClickTabs('6');">대전/충청</a></li>
+					<li id="infoTab7"><a href="#" ng-click="onClickTabs('7');">강원/제주</a></li>
+				</ul>
+			</div>
+			<div class="channel-body">
+				<table width="100%" border="0" cellspacing="0" cellpadding="0">
+					<thead>
+						<tr>
+							<th scope="col">지역</th>
+							<th scope="col">시/군/구</th>
+							<th scope="col">회사</th>
+							<th scope="col">채널번호</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ng-repeat="ch in chList">
+							<td>{{ch.areaName}}</td>
+							<td>{{ch.cityName}}</td>
+							<td>{{ch.companyName}}</td>
+							<td>{{ch.chNo}}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<!-- // content end -->
+			
+		<!-- Footer div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/footerCreateDiv.js"></script>
+		<!-- //Footer div 생성영역 끝 -->
+		
+	</div>
+	<!-- //Wrap -->
+
+	<script type="text/javascript">
+	
+		angular.module('chInfoApp', [])
+		.config(['$httpProvider', function($httpProvider) {
+				$httpProvider.defaults.useXDomain = true;
+				delete $httpProvider.defaults.headers.common['X-Requested-With'];
+			}
+		])
+		.controller('bodyCtrl', function ($rootScope, $scope, $timeout, $http, $sce) {
+	
+			$scope.frontChInfoInfo = {};	// 채널 호출 정보
+			$scope.chList = [];				// 채널지역 탭 리스트
+			$scope.param = {searchKey:getParameter("searchKey")};
+			var url = host+"/mobile/mobileFrontChInfoList.do";
+			console.log(url);
+	
+			$scope.contentLoad = function (){
+				var scParam = $scope.param;
+				console.log(scParam);
+				$http.post(url, $.param(scParam), {
+					headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+				}).success(function(data){
+					console.log(data);
+	
+					// 요청결과 설정
+					$scope.chInfo = data.frontChInfoInfo;		// 채널요청 정보
+					$scope.chList = data.frontChInfoInfoList;
+					// 이미지 위에 덧씌울 카테고리 이미지 css class 설정
+					for(var i=0; i<$scope.chList.length; i++){
+						// 이미지 위에 덧씌울 카테고리 이미지 css class 설정
+						if($scope.chList[i].searchKey == "1"){
+							$(".channel-subtab-ul li").removeClass("active");
+							$("#infoTab1").addClass("active");
+						} else if($scope.chList[i].searchKey == "2"){
+							$(".channel-subtab-ul li").removeClass("active");
+							$("#infoTab2").addClass("active");
+						} else if($scope.chList[i].searchKey == "3"){
+							$(".channel-subtab-ul li").removeClass("active");
+							$("#infoTab3").addClass("active");
+						} else if($scope.chList[i].searchKey == "4"){
+							$(".channel-subtab-ul li").removeClass("active");
+							$("#infoTab4").addClass("active");
+						} else if($scope.chList[i].searchKey == "5"){
+							$(".channel-subtab-ul li").removeClass("active");
+							$("#infoTab5").addClass("active");
+						} else if($scope.chList[i].searchKey == "6"){
+							$(".channel-subtab-ul li").removeClass("active");
+							$("#infoTab6").addClass("active");
+						} else if($scope.chList[i].searchKey == "7"){
+							$(".channel-subtab-ul li").removeClass("active");
+							$("#infoTab7").addClass("active");
+						}
+					}
+	
+				}).error(function(data, status){
+					console.log(data);
+				});
+			}
+	
+			// 프로그램 탭 선택시 처리
+			$scope.onClickTabs = function(gubun){
+				// 프로그램 탭 class 속성 제거
+				$(".channel-subtab-ul li").removeClass("active");
+	
+				if (gubun == '1'){			// 서울
+					$("#infoTab1").addClass("active");
+				} else if (gubun == '2'){	// 인천/경기
+					$("#infoTab2").addClass("active");
+				} else if (gubun == '3'){	// 대구/경북
+					$("#infoTab3").addClass("active");
+				} else if (gubun == '4'){	// 부산/경남
+					$("#infoTab4").addClass("active");
+				} else if (gubun == '5'){	// 광주/전라
+					$("#infoTab5").addClass("active");
+				} else if (gubun == '6'){	// 대전/충청
+					$("#infoTab6").addClass("active");
+				} else if (gubun == '7'){	// 강원/제주
+					$("#infoTab7").addClass("active");
+				}
+				$scope.param.searchKey = gubun;
+				$scope.contentLoad();
+			}
+	
+			$scope.contentLoad();
+		});
+	
+		//지역
+		$('.channel-subtab-ul').bxSlider({
+			infiniteLoop: false,
+			slideWidth: 80,
+			minSlides: 3,
+			maxSlides: 3,
+			moveSlides: 1,
+			slideMargin: 10
+		});
+	
+	</script>
+
+	<!-- 메뉴 생성 스크립트 시작(닫는 body 태그 위에 있어야 함.)  -->
+	<script type="text/javascript" src="../js/menuCreateDiv.js"></script>
+	<!-- 메뉴 생성 스크립트 끝                                    -->
+
+</body>
+</html>

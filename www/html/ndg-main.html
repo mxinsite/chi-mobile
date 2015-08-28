@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<link rel="shortcut icon" type="image/x-icon" href="../images/common/ico-chi.ico" />
+
+	<title>산업방송 채널i</title>
+	<!--include-->
+	<link href="../css/bootstrap.css" rel="stylesheet" type="text/css" />
+	<link href="../css/bootstrap-theme.css" rel="stylesheet" type="text/css" />
+	<link href="../css/font-awesome.css" rel="stylesheet" type="text/css" />
+	<link href="../css/layout.css" rel="stylesheet" type="text/css" />
+
+	<script type="text/javascript" src="../js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript" src="../js/common.js"></script>
+	<script type="text/javascript" src="../js/bootstrap.js"></script>
+	<script type="text/javascript" src="../js/jquery.bxslider.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular-resource.js"></script>
+	<script type="text/javascript" src="https://101.livere.co.kr/js/livere8_lib.js" charset="utf-8"></script>
+	<!--//include-->
+</head>
+
+<body ng-app="ndgApp">
+	<!-- Wrap -->
+	<div id="wrap">
+	
+		<!-- Header div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/headerCreateDiv.js"></script>
+		<script type="text/javascript">
+			// 선택된 메뉴의 active class 설정
+			setTopMenuActiveClass("TOP_MENU_2");	// TOP_MENU_1 : 뉴스, TOP_MENU_2 : 프로그램, TOP_MENU_3 : 편성표, TOP_MENU_4 : ON-AIR, NONE : 미선택	
+		</script>
+		<!-- //Header div 생성영역 끝 -->
+
+		<!-- content start -->
+		<div id="body" ng-controller="bodyCtrl">
+			<!-- 모바일 롤링 시작 -->
+			<div class="main-rolling-box">
+				<ul class="main-rolling-ul">
+				<li ng-repeat="rolling in introList" program-rolling-repeat>
+					<a href="#"><img src="{{rolling.attachUrl}}" width="100%" alt="{{rolling.title}}"></a>
+				</li>
+				</ul>
+			</div>
+			<!-- //모바일 롤링 끝 -->
+
+			<!-- 프로그램 메뉴 탭 시작 -->
+			<div class="pro-tab clearfix">
+				<ul class="pro-tab-ul">
+				<li id="programTabs1"><a href="" ng-click="onclickProMain('A');">방영프로그램</a></li>
+				<li id="programTabs2"><a href="" ng-click="onclickProMain('B');">종영프로그램</a></li>
+				<li class="active" id="programTabs3"><a href="" ng-click="onClickProgramTabs('C');">네트워크디자인</a></li>
+				</ul>
+			</div>
+			<!-- //프로그램 메뉴 탭 끝 -->
+
+			<!-- 카테고리 탭 롤링 시작 -->
+			<div id="categoryDiv" class="pro-subtab clearfix">
+				<ul class="pro-subtab-ul">
+				<li id="categoryTabs1" class="active"><a href="" ng-click="onClickCategoryTabs('');">전체</a></li>
+				<li id="categoryTabs2"><a href="" ng-click="onClickCategoryTabs('1');">Station ID</a></li>
+				<li id="categoryTabs3"><a href="" ng-click="onClickCategoryTabs('2');">Ch. Campain</a></li>
+				<li id="categoryTabs4"><a href="" ng-click="onClickCategoryTabs('3');">Promo</a></li>
+				<li id="categoryTabs5"><a href="" ng-click="onClickCategoryTabs('4');">Bumper</a></li>
+				</ul>
+			</div>
+			<!-- //카테고리 탭 롤링 끝 -->
+
+			<!-- 프로그램 컨텐츠 리스트 시작 -->
+			<div class="newslist-box">
+				<ul>
+				<li ng-repeat="program in programList">
+					<a href="" ng-click="onclickVodList(program)">
+						<div class="newslist-img">
+							<div class="newslist-img-part {{program.categoryCssClass}}"></div>
+							<img src="{{program.prmImg1FullPath}}" width="100%" alt="{{program.programName}}">
+						</div>
+						<div class="newslist-title">
+							<dl>
+							<dt>{{program.title}}</dt>
+							<dd>{{program.summary}}</dd>
+							</dl>
+						</div>
+					</a>
+					<div class="clear"></div>
+				</li>
+				</ul>
+			</div>
+			<div style="margin-bottom:10px;">
+			<button class="btn btn-default" style="width:100%;" ng-click="addList();"><i class="fa fa-chevron-down"></i>&nbsp;더보기</button>
+		</div>
+		<!-- //프로그램 컨텐츠 리스트 끝 -->
+	</div>
+	<!-- //content end -->
+	
+	<!-- postFormCtrl -->
+	<div ng-controller="postFormCtrl">
+		<form name="ndgViewForm" action="ndg-view.html" method="GET">
+			<input type='hidden' id='idx' name='idx' value=''>
+		</form>
+	</div>
+	<!-- //postFormCtrl -->
+	
+	<!-- proFormCtrl -->
+	<div ng-controller="proFormCtrl">
+		<form name="proForm" action="pro-main.html" method="GET">
+			<input type='hidden' id='menuFlag' name='menuFlag' value=''>
+		</form>
+	</div>
+	<!-- //proFormCtrl -->
+
+	<!-- Footer div 생성영역 시작  -->
+	<script type="text/javascript" src="../js/footerCreateDiv.js"></script>
+	<!-- //Footer div 생성영역 끝 -->
+		
+	</div>
+	<!-- //Wrap -->
+
+	<script type="text/javascript">
+		var programRollingBxCnt = 1;
+		var programRollingBxSlider = "";
+
+		angular.module('ndgApp', [])
+		.config(['$httpProvider', function($httpProvider) {
+				$httpProvider.defaults.useXDomain = true;
+				delete $httpProvider.defaults.headers.common['X-Requested-With'];
+			}
+		])
+		.directive('programRollingRepeat', function($timeout) {
+			return {
+				restrict: 'A',
+	            link : function(scope, elem, attr){
+	            	if (scope.$last === true) {
+	            		$timeout(function(){scope.setProgramRollingBxSlider()},0);
+	            	}
+	            }
+			};
+		})
+		.controller('bodyCtrl', function ($rootScope, $scope, $timeout, $http, $sce) {
+
+			$scope.introList = [];		// 모바일인트로 리스트
+			$scope.programList = [];	// 프로그램 리스트
+			$scope.menuFlag = {};		// 메뉴구분
+			$scope.categoryFlag = {};	// 카테고리구분
+
+			$scope.param = {menuFlag:"C", categoryFlag:"", pageIndex:1};
+			var url = host+"/mobile/proMain.do";
+			console.log(url);
+
+			// call
+			$scope.contentLoad = function (){
+				var scParam = $scope.param;
+				console.log(scParam);
+				$http.post(url, $.param(scParam), {
+					headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+				}).success(function(data){
+					console.log(data);
+
+					// 요청결과 설정
+					$scope.introList = data.introList;				// 모바일인트로 리스트
+					$scope.menuFlag = data.menuFlag;	// 메뉴구분
+					$scope.categoryFlag = data.categoryFlag;	// 카테고리구분
+
+					// 기존 프로그램 리스트에 프로그램 리스트 추가
+					for (var i=0; i< data.programList.length; i++){
+						$scope.programList.push(data.programList[i]);
+					}
+
+					// 이미지 위에 덧씌울 카테고리 이미지 css class 설정
+					for(var i=0; i<$scope.programList.length; i++){
+						// 이미지 위에 덧씌울 카테고리 이미지 css class 설정
+						if($scope.programList[i].category == "1"){
+							$scope.programList[i].categoryCssClass = "img-ndg-part01";
+						} else if($scope.programList[i].category == "2"){
+							$scope.programList[i].categoryCssClass = "img-ndg-part02";
+						} else if($scope.programList[i].category == "3"){
+							$scope.programList[i].categoryCssClass = "img-ndg-part03";
+						} else if($scope.programList[i].category == "4"){
+							$scope.programList[i].categoryCssClass = "img-ndg-part04";
+						}
+					}
+
+				}).error(function(data, status){
+					console.log(data);
+				});
+			}
+
+			// 프로그램롤링
+			$scope.setProgramRollingBxSlider = function(){
+				if(programRollingBxCnt < 2){
+					programRollingBxSlider = $('.main-rolling-ul').bxSlider({
+						auto: true,
+						pager: true,
+						//autoControls: true,
+						pause: 4000,
+						speed: 700
+					});
+
+					programRollingBxCnt++;
+				}else{
+					programRollingBxSlider.reloadSlider({
+						auto: true,
+						pager: true,
+						//autoControls: true,
+						pause: 4000,
+						speed: 700
+					});
+				}
+			}
+
+			// 더보기 클릭시 처리
+			$scope.addList=function(){
+				$scope.param.pageIndex = $scope.param.pageIndex + 1;
+				$scope.contentLoad();
+			}
+
+			// 프로그램 탭 선택시 처리
+			$scope.onClickProgramTabs = function(gubun){
+				// 프로그램 탭 class 속성 제거
+				$(".pro-tab-ul li").removeClass("active");
+				$scope.param.categoryFlag = '';
+
+				if (gubun == 'C'){	// 네트워크디자인
+					$("#programTabs3").addClass("active");
+					$scope.param.menuFlag = 'C';
+
+					// 변수초기화
+					$scope.introList = [];		// 모바일인트로 리스트
+					$scope.programList = [];	// 프로그램 리스트
+					$scope.param.pageIndex = 1;
+					// 카테고리 탭 active class 초기화
+					$scope.setActiveCategoryTab($scope.param.categoryFlag);
+					// 검색
+					$scope.contentLoad();
+				}
+			}
+
+			// 카테고리 탭 선택시 처리
+			$scope.onClickCategoryTabs = function(gubun){
+				$scope.param.categoryFlag = gubun;
+
+				// 변수초기화
+				$scope.introList = [];		// 모바일인트로 리스트
+				$scope.programList = [];	// 프로그램 리스트
+				$scope.param.pageIndex = 1;
+				// 카테고리 탭 active class 초기화
+				$scope.setActiveCategoryTab($scope.param.categoryFlag);
+				// 검색
+				$scope.contentLoad();
+			}
+
+			// 카테고리 탭 active class 초기화
+			$scope.setActiveCategoryTab = function(gubun){
+				// 카테고리 탭 class 속성 제거
+				$(".pro-subtab-ul li").removeClass("active");
+				// 선택한 카테고리 탭의
+				if(gubun == "") {				// 전체		[]
+					$("#categoryTabs1").addClass("active");
+				} else if(gubun == "1") {		// Station ID
+					$("#categoryTabs2").addClass("active");
+				} else if(gubun == "2") {		// Ch. Campain
+					$("#categoryTabs3").addClass("active");
+				} else if(gubun == "3") {		// Promo
+					$("#categoryTabs4").addClass("active");
+				} else if(gubun == "4") {		// Bumper
+					$("#categoryTabs5").addClass("active");
+				}
+				$scope.param.categoryFlag = gubun;
+			}
+
+			// 네트워크디자인 목록 클릭
+			$scope.onclickVodList = function(obj){
+				$rootScope.$broadcast('ndgView', obj);
+			}
+
+			// 방영프로그램, 종영프로그램 탭 클릭
+			$scope.onclickProMain = function(obj){
+				$rootScope.$broadcast('proMain', obj);
+			}
+
+			$scope.contentLoad();	// call
+
+		}).controller('proFormCtrl',function($rootScope, $scope, $http) {
+			$scope.$on('proMain', function(e, obj){
+				proForm.menuFlag.value = obj;
+				proForm.submit();
+	        });
+		}).controller('postFormCtrl',function($rootScope, $scope, $http) {
+			$scope.$on('ndgView', function(e, obj){
+				ndgViewForm.idx.value = obj.idx;
+				ndgViewForm.submit();
+	        });
+		});
+
+	</script>
+
+	<!-- 메뉴 생성 스크립트 시작(닫는 body 태그 위에 있어야 함.)  -->
+	<script type="text/javascript" src="../js/menuCreateDiv.js"></script>
+	<!-- 메뉴 생성 스크립트 끝                                    -->
+
+</body>
+</html>
+<script type="text/javascript">
+	//카테고리롤링
+	$('.pro-subtab-ul').bxSlider({
+		infiniteLoop: false,
+		slideWidth: 80,
+		minSlides: 4,
+		maxSlides: 4,
+		moveSlides: 1,
+		slideMargin: 10
+	});
+</script>

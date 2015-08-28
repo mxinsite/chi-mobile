@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ko">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
+	<link rel="shortcut icon" type="image/x-icon" href="../images/common/ico-chi.ico" />
+
+	<title>산업방송 채널i</title>
+	<!--include-->
+	<link href="../css/bootstrap.css" rel="stylesheet" type="text/css" />
+	<link href="../css/bootstrap-theme.css" rel="stylesheet" type="text/css" />
+	<link href="../css/font-awesome.css" rel="stylesheet" type="text/css" />
+	<link href="../css/layout.css" rel="stylesheet" type="text/css" />
+
+	<script type="text/javascript" src="../js/jquery-1.11.3.min.js"></script>
+	<script type="text/javascript" src="../js/jquery-migrate-1.2.1.min.js"></script>
+	<script type="text/javascript" src="../js/common.js"></script>
+	<script type="text/javascript" src="../js/bootstrap.js"></script>
+	<script type="text/javascript" src="../js/jquery.bxslider.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular.js"></script>
+	<script type="text/javascript" src="../js/angular-1.4.3/angular-resource.js"></script>
+	<script type="text/javascript" src="https://101.livere.co.kr/js/livere8_lib.js" charset="utf-8"></script>
+	<!--//include-->
+</head>
+
+<body ng-app="newsApp">
+
+	<!-- Wrap -->
+	<div id="wrap">
+	
+		<!-- Header div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/headerCreateDiv.js"></script>
+		<script type="text/javascript">
+			// 선택된 메뉴의 active class 설정
+			setTopMenuActiveClass("TOP_MENU_1");	// TOP_MENU_1 : 뉴스, TOP_MENU_2 : 프로그램, TOP_MENU_3 : 편성표, TOP_MENU_4 : ON-AIR	
+		</script>
+		<!-- //Header div 생성영역 끝 -->
+	
+		<!-- content start -->	
+		<div id="body" ng-controller="bodyCtrl">
+			<!-- <script src="http://vjs.zencdn.net/c/video.js"></script> -->
+			<div class="today-news" id="home_video">
+				<div class="today-news-title"><span>Today</span> News</div>
+				<div class="mov-pic-box">
+	        		<div class="mov-play-box"><a href="" ng-click="moveMov(newsMainNewsInfo.cntMov2FullPath);" target="_parent"><img src="../images/common/ico-play.png" width="100" height="100" alt="VOD Play"></a></div>
+	        		<img src="{{newsMainNewsInfo.cntImg2FullPath}}" width="100%" alt="{{newsMainNewsInfo.title}}">
+	   			</div>
+			</div>
+			<div class="news-tab clearfix">
+				<ul class="news-tab-ul">
+				<li class="active" id="tabs1"><a href="" ng-click="onClickNewsTabs('1');">채널i 산업뉴스</a></li>
+				<li id="tabs2"><a href="" ng-click="onClickNewsTabs('2');">채널i 뉴스와이드</a></li>
+				</ul>
+			</div>
+			<div class="newslist-box">
+				<ul>
+				<li ng-repeat="news in newsList">
+					<a href="" ng-click="onclickNewsView(news)">
+						<div class="newslist-img">
+							<img src="{{news.cntImg1FullPath}}" width="100%">
+						</div>
+						<div class="newslist-title">
+							<dl>
+								<dt>{{news.title}}</dt>
+								<dd>등록 {{news.publicDate}}</dd>
+								<dd ng-bind-html="deliberatelyTrustDangerousSnippet(news.summary)"></dd>
+							</dl>
+						</div>
+					</a>
+					<div class="clear"></div>
+				</li>
+				</ul>
+			</div>
+			<div style="margin-bottom:10px;">
+				<button class="btn btn-default" style="width:100%;" ng-click="addList();"><i class="fa fa-chevron-down"></i>&nbsp;더보기</button>
+			</div>
+		</div>
+		<!-- //content end -->
+		
+		<!-- postFormCtrl -->
+		<div ng-controller="postFormCtrl">
+			<form name="newsViewForm" action="news-view.html" method="GET">
+				<input type='hidden' id='programIdx' name='programIdx' value=''>
+				<input type='hidden' id='contentIdx' name='contentIdx' value=''>
+			</form>
+		</div>
+		<!-- //postFormCtrl -->
+		
+		<!-- Footer div 생성영역 시작  -->
+		<script type="text/javascript" src="../js/footerCreateDiv.js"></script>
+		<!-- //Footer div 생성영역 끝 -->
+		
+	</div>
+	<!-- //Wrap -->
+	
+	<script type="text/javascript">
+		angular.module('newsApp', [])
+		.config(['$httpProvider', function($httpProvider) {
+				$httpProvider.defaults.useXDomain = true;
+				delete $httpProvider.defaults.headers.common['X-Requested-With'];
+			}
+		])
+		.controller('bodyCtrl', function ($rootScope, $scope, $timeout, $http, $sce) {
+			$scope.newsMainNewsInfo = {};
+			$scope.newsList = [];
+			$scope.param = {menuFlag:getParameter("menuFlag"), pageIndex:1};
+			var url = host+"/mobile/newsMain.do";
+			console.log(url);
+
+			// 뉴스 탭 class 속성 설정
+			$(".news-tab-ul li").removeClass("active");
+			if ($scope.param.menuFlag == 'B'){
+				$("#tabs2").addClass("active");
+			} else {
+				$("#tabs1").addClass("active");
+			}
+
+			// call
+			$scope.contentLoad = function (){
+				var scParam = $scope.param;
+				console.log(scParam);
+				$http.post(url, $.param(scParam), {
+					headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'}
+				}).success(function(data){
+					console.log(data);
+
+					// Today News 설정
+					$scope.newsMainNewsInfo = data.newsMainNewsInfo;
+
+					// 뉴스 목록 설정
+					for (var i=0; i< data.newsList.length; i++){
+						$scope.newsList.push(data.newsList[i]);
+					}
+
+				}).error(function(data, status){
+					console.log(data);
+				});
+			}
+
+			// 더보기 클릭 이벤트
+			$scope.addList=function(){
+				$scope.param.pageIndex = $scope.param.pageIndex + 1;
+				$scope.contentLoad();
+			}
+
+			// 뉴스탭 클릭 이벤트
+			$scope.onClickNewsTabs = function(gubun){
+				if (gubun == '1'){
+					$("#tabs1").addClass("active");
+					$("#tabs2").removeClass("active");
+					$scope.param.menuFlag = 'A';
+				}else{
+					$("#tabs1").removeClass("active");
+					$("#tabs2").addClass("active");
+					$scope.param.menuFlag = 'B';
+				}
+				$scope.param.pageIndex = 1;
+				$scope.newsList = [];
+				$scope.contentLoad();
+			}
+
+			// 뉴스 상세조회 이벤트
+			$scope.onclickNewsView = function(obj){
+				$rootScope.$broadcast('newsView', obj);
+			}
+
+			// deliberatelyTrustDangerousSnippet
+			$scope.deliberatelyTrustDangerousSnippet = function(data) {
+				return $sce.trustAsHtml(data);
+			};
+
+			// 동영상 이동
+			$scope.moveMov = function(movUrl){
+				location.href = movieHostByAndroid + movUrl;
+			}
+
+			$scope.contentLoad();	// call
+
+		}).controller('postFormCtrl',function($rootScope, $scope, $http) {
+			$scope.$on('newsView', function(e, obj){
+				newsViewForm.programIdx.value = obj.programIdx;
+				newsViewForm.contentIdx.value = obj.contentIdx;
+				newsViewForm.submit();
+	        });
+		});
+	</script>
+
+	<!-- 메뉴 생성 스크립트 시작(닫는 body 태그 위에 있어야 함.)  -->
+	<script type="text/javascript" src="../js/menuCreateDiv.js"></script>
+	<!-- 메뉴 생성 스크립트 끝                                    -->
+
+</body>
+</html>
